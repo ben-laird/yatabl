@@ -145,4 +145,4 @@ It's generic enough to allow for working with any schema validation library (or 
 
 ## Support
 
-If you like this library, thanks so much! I'm glad to make something people like using. If you _really_ like it and want to support me, star this library on GitHub or donate on Ko-fi. Any support/encouragement is greatly appreciated!
+If you like this library, thanks so much! I'm glad to make something people like using. If you _really_ like it and want to support me, star this library on GitHub or [buy me a coffee](https://www.buymeacoffee.com/benlaird). Any support/encouragement is greatly appreciated!
