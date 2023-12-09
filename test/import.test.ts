@@ -61,24 +61,24 @@ Deno.test(async function Examples(t) {
         rank: "General",
         name: "Obi-Wan Kenobi",
       });
+    },
+  });
 
-      t.step({
-        name: "Quickstart",
-        fn() {
-          type CloneTrooper = {
-            rank: string;
-            id: number;
-            name?: string;
-          };
+  await t.step({
+    name: "Quickstart",
+    fn() {
+      type CloneTrooper = {
+        rank: string;
+        id: number;
+        name?: string;
+      };
 
-          const Clone = tag(caster<CloneTrooper>(), "Clone Trooper");
+      const Clone = tag(caster<CloneTrooper>(), "Clone Trooper");
 
-          const _fives = Clone({
-            id: 5555,
-            rank: "Trooper",
-            name: "Fives",
-          });
-        },
+      const _fives = Clone({
+        id: 5555,
+        rank: "Trooper",
+        name: "Fives",
       });
     },
   });
