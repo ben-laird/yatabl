@@ -1,9 +1,8 @@
-name: Release
+name: Pull Request
 
 on:
-  push:
-    tags:
-      - "*"
+  pull_request:
+    branches: ["main"]
 
 permissions:
   contents: read
@@ -26,14 +25,12 @@ jobs:
         with:
           standalone: true
           run_install: false
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Build
-        run: deno task build ${{ github.ref_name }}
+        run: deno task build
 
       - name: Publish build to npm
-        run: cd build && pnpm publish
+        run: cd build && pnpm publish --dry-run
 
       - name: Upload build
         uses: actions/upload-artifact@v3
