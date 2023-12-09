@@ -21,6 +21,9 @@ jobs:
         with:
           deno-version: vx.x.x
 
+      - name: Prepare pnpm
+        run: "touch package.json && echo '{ 'packageManager': 'pnpm@latest' }' >> package.json"
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
