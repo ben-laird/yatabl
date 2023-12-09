@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "*"
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v3
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: vx.x.x
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          standalone: true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Build
+        run: deno task build ${{ github.ref_name }}
+
+      - name: Publish build to npm
+        run: cd build && pnpm publish
+
+      - name: Upload build
+        uses: actions/upload-artifact@v3
+        with:
+          name: npm-build
+          path: build
