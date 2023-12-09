@@ -1,4 +1,4 @@
-import { caster, tag } from "../src/mod.ts";
+import { caster, tag } from "https://deno.land/x/yatabl@v0.1.0/src/mod.ts";
 
 Deno.test(async function Examples(t) {
   await t.step({
@@ -60,6 +60,25 @@ Deno.test(async function Examples(t) {
         affiliation: "Jedi",
         rank: "General",
         name: "Obi-Wan Kenobi",
+      });
+
+      t.step({
+        name: "Quickstart",
+        fn() {
+          type CloneTrooper = {
+            rank: string;
+            id: number;
+            name?: string;
+          };
+
+          const Clone = tag(caster<CloneTrooper>(), "Clone Trooper");
+
+          const _fives = Clone({
+            id: 5555,
+            rank: "Trooper",
+            name: "Fives",
+          });
+        },
       });
     },
   });
