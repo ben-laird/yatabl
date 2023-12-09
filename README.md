@@ -1,25 +1,38 @@
 # Yet Another Tagging and Branding Library
 
-Yatabl (pronounced "YEA-tuh-bull") is a dead-simple tagging and branding library that focuses on doing one thing and doing it well.
+Yatabl (pronounced "YEA-tuh-bull") is a dead-simple tagging and branding library
+that focuses on doing one thing and doing it well.
 
 ## Features
 
 - Small, Performant, Flexible
   - 0 dependencies
   - Browser/Node/Bun/Deno/Edge friendly
-  - Built with core JS/TS language constructs: if your runtime supports classes and `Object.assign()`, it supports `yatabl`
-  - Incredibly small footprint: entire source code (before bundling, including doc comments + types) is about 240 lines across 3 files (an average of about 80 lines per file)
-  - Tree-shakeable: don't pay for what you don't use (not a lot to pay for with this lib anyways)
+  - Built with core JS/TS language constructs: if your runtime supports classes
+    and `Object.assign()`, it supports `yatabl`
+  - Incredibly small footprint: entire source code (before bundling, including
+    doc comments + types) is about 240 lines across 3 files (an average of about
+    80 lines per file)
+  - Tree-shakeable: don't pay for what you don't use (not a lot to pay for with
+    this lib anyways)
 - Great DX
-  - Type & runtime safe: made with love in TypeScript, doesn't lose any safety guarantees when compiled to JavaScript
-  - Aggressive inferences: stay highly type-safe while barely having to write your own types
-  - Easy interoperability: `yatabl` plays nice with pretty much any schema validation library, like Zod, Yup, runtypes, and more
-  - Easy adoptability: `yatabl` only adds metadata to objects and doesn't wrap them, allowing devs to just drop it in and perform easy validation checks wherever
+  - Type & runtime safe: made with love in TypeScript, doesn't lose any safety
+    guarantees when compiled to JavaScript
+  - Aggressive inferences: stay highly type-safe while barely having to write
+    your own types
+  - Easy interoperability: `yatabl` plays nice with pretty much any schema
+    validation library, like Zod, Yup, runtypes, and more
+  - Easy adoptability: `yatabl` only adds metadata to objects and doesn't wrap
+    them, allowing devs to just drop it in and perform easy validation checks
+    wherever
   - Validate once, enforce everywhere: save time and resources by
-    - asserting in your function types that something must pass validation before being passed in, or
-    - validating something once in your code and checking if it passed everywhere else, or
+    - asserting in your function types that something must pass validation
+      before being passed in, or
+    - validating something once in your code and checking if it passed
+      everywhere else, or
     - enforcing assumptions or type/validation contracts you make in your code
-  - Docs included: JSDoc comments included so you never have to look at this page again :smile:
+  - Docs included: JSDoc comments included so you never have to look at this
+    page again :smile:
 
 ## Installation
 
@@ -59,7 +72,7 @@ Deno.test(async function Patterns(t) {
           rank: string;
           id: number;
           name?: string;
-        }>()
+        }>(),
       );
 
       // Step 2: use tag function wherever you want!
@@ -227,13 +240,20 @@ Deno.test(async function Patterns(t) {
 
 ## The Secret Sauce: Yatables
 
-The secret sauce of `yatabl` is a function type called a `Yatable`. It represents any processing (validation and/or same-type transformation) function.
+The secret sauce of `yatabl` is a function type called a `Yatable`. It
+represents any processing (validation and/or same-type transformation) function.
 
 ```ts
 export type Yatable<T extends DataStructure, U = T> = (thing: U) => T;
 ```
 
-It's generic enough to allow for working with any schema validation library (or type narrowing system in general), yet it allows for us to constrain any values we pass into our tagging functions to type `T` or to type `U` if transformation is needed. We could even write simple functions to convert schema validation constructs into `Yatable`s, and in the future, there will be some official utility functions to convert things like type guards, type assertions, and Zod schemas into `Yatable`s.
+It's generic enough to allow for working with any schema validation library (or
+type narrowing system in general), yet it allows for us to constrain any values
+we pass into our tagging functions to type `T` or to type `U` if transformation
+is needed. We could even write simple functions to convert schema validation
+constructs into `Yatable`s, and in the future, there will be some official
+utility functions to convert things like type guards, type assertions, and Zod
+schemas into `Yatable`s.
 
 ## Roadmap
 
@@ -246,9 +266,14 @@ It's generic enough to allow for working with any schema validation library (or 
   - [ ] Ctx
   - [ ] Validator auth (to determine which validator did what)
 - [ ] Error handling (maybe need a new library for that)
-- [ ] Event emission (for error logging or pub/sub programming, may also need a new library)
+- [ ] Event emission (for error logging or pub/sub programming, may also need a
+      new library)
 - [x] Full transformation functions (a la `new`-able objects)
 
 ## Support
 
-If you like this library, thanks so much! I'm glad to make something people like using. If you _really_ like it and want to support me, star this library on [GitHub](https://github.com/ben-laird/yatabl) or [buy me a coffee](https://www.buymeacoffee.com/benlaird). Any support/encouragement is greatly appreciated!
+If you like this library, thanks so much! I'm glad to make something people like
+using. If you _really_ like it and want to support me, star this library on
+[GitHub](https://github.com/ben-laird/yatabl) or
+[buy me a coffee](https://www.buymeacoffee.com/benlaird). Any
+support/encouragement is greatly appreciated!
