@@ -1,12 +1,32 @@
-import { caster, tag } from "../src/mod.ts";
+import { tag, yatable } from "../mod.ts";
 
 Deno.test(async function Examples(t) {
+  await t.step({
+    name: "Quickstart",
+    fn() {
+      const Clone = tag(
+        "Clone Trooper",
+        yatable<{
+          rank: string;
+          id: number;
+          name?: string;
+        }>(),
+      );
+
+      const _fives = Clone({
+        id: 5555,
+        rank: "Trooper",
+        name: "Fives",
+      });
+    },
+  });
+
   await t.step({
     name: "Direct creation of tag",
     fn() {
       const Rex = { legion: 501, rank: "Captain" };
 
-      const _taggedRex = tag(Rex, "Captain Rex");
+      const _taggedRex = tag("Captain Rex", Rex);
     },
   });
 
@@ -15,7 +35,7 @@ Deno.test(async function Examples(t) {
     fn() {
       const Cody = { battalion: 212, rank: "Commander" };
 
-      const CodyTagger = tag(caster<typeof Cody>(), "Commander Cody");
+      const CodyTagger = tag("Commander Cody", yatable<typeof Cody>());
 
       const _taggedCody = CodyTagger(Cody);
     },
@@ -24,13 +44,13 @@ Deno.test(async function Examples(t) {
   await t.step({
     name: "Creator function with guard",
     fn() {
-      type Jedi = {
+      type JediInfo = {
         affiliation: "Jedi";
         rank: "General";
         name: string;
       };
 
-      const JediTagger = tag((x) => {
+      const Jedi = tag("Jedi General", (x) => {
         if (!(x && typeof x === "object")) {
           throw new Error("validation failed!");
         }
@@ -47,16 +67,16 @@ Deno.test(async function Examples(t) {
           throw new Error("Jedi should have a name!");
         }
 
-        return x as Jedi;
-      }, "Jedi General");
+        return x as JediInfo;
+      });
 
-      const _Anakin = JediTagger({
+      const _Anakin = Jedi({
         affiliation: "Jedi",
         rank: "General",
         name: "Anakin Skywalker",
       });
 
-      const _ObiWan = JediTagger({
+      const _ObiWan = Jedi({
         affiliation: "Jedi",
         rank: "General",
         name: "Obi-Wan Kenobi",
