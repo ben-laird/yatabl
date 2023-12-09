@@ -1,6 +1,6 @@
 # Yet Another Tagging and Branding Library
 
-A ridiculously simple tagging and branding library that focuses on doing one thing and doing it well.
+Yatabl (pronounced "YEA-tuh-bull") is a dead-simple tagging and branding library that focuses on doing one thing and doing it well.
 
 ## Features
 
@@ -8,10 +8,11 @@ A ridiculously simple tagging and branding library that focuses on doing one thi
   - 0 dependencies
   - Browser/Node/Bun/Deno/Edge friendly
   - Built with core JS/TS language constructs: if your runtime supports classes and `Object.assign()`, it supports `yatabl`
-  - Incredibly small footprint: entire source code (before bundling, including doc comments + types) is about 130 lines across 2 files
+  - Incredibly small footprint: entire source code (before bundling, including doc comments + types) is about 240 lines across 3 files (an average of about 80 lines per file)
   - Tree-shakeable: don't pay for what you don't use (not a lot to pay for with this lib anyways)
 - Great DX
   - Type & runtime safe: made with love in TypeScript, doesn't lose any safety guarantees when compiled to JavaScript
+  - Aggressive inferences: stay highly type-safe while barely having to write your own types
   - Easy interoperability: `yatabl` plays nice with pretty much any schema validation library, like Zod, Yup, runtypes, and more
   - Easy adoptability: `yatabl` only adds metadata to objects and doesn't wrap them, allowing devs to just drop it in and perform easy validation checks wherever
   - Validate once, enforce everywhere: save time and resources by
@@ -38,50 +39,50 @@ Using Deno:
 import { y } from "https://deno.land/x/yatabl/mod.ts";
 ```
 
-## Usage
+## Usage and Patterns
 
-Here are some examples taken right from the test suite:
+Here's a quick guide by example on the ideal patterns to use:
 
 ```ts
-import { caster, tag } from "https://deno.land/x/yatabl/mod.ts";
+import { assertThrows } from "https://deno.land/std@0.208.0/assert/mod.ts";
 
-Deno.test(async function Examples(t) {
+import { y } from "https://deno.land/x/yatabl/mod.ts"; // Convenient zod-style import
+
+Deno.test(async function Patterns(t) {
   await t.step({
-    name: "Direct creation of tag",
+    name: "Quickstart",
     fn() {
-      const Rex = { legion: 501, rank: "Captain" };
+      // Step 1: define a tag function
+      const Clone = y.tag(
+        "Clone Trooper",
+        y.yatable<{
+          rank: string;
+          id: number;
+          name?: string;
+        }>()
+      );
 
-      const _taggedRex = tag(Rex, "Captain Rex");
+      // Step 2: use tag function wherever you want!
+      const _fives = Clone({
+        id: 5555,
+        rank: "Trooper",
+        name: "Fives",
+      });
     },
   });
 
   await t.step({
-    name: "Creator function",
+    name: "Tag function with validation",
     fn() {
-      const Cody = { battalion: 212, rank: "Commander" };
-
-      type T_Cody = typeof Cody;
-
-      // Use the included `caster()` function with a type to create a tagger function
-      // that performs no runtime validation and only constrains the input type
-      const CodyTagger = tag(caster<T_Cody>(), "Commander Cody");
-
-      const _taggedCody = CodyTagger(Cody);
-    },
-  });
-
-  await t.step({
-    name: "Creator function with guard",
-    fn() {
-      type Jedi = {
+      // interfaces are unsupported because of a TypeScript language issue :(
+      type JediInfo = {
         affiliation: "Jedi";
         rank: "General";
         name: string;
       };
 
-      const JediTagger = tag((x) => {
-        // Put your validation logic right here! Use basically any schema validation library you want!
-
+      // You can include validation logic in your tag functions too!
+      const Jedi = y.tag("Jedi General", (x) => {
         if (!(x && typeof x === "object")) {
           throw new Error("validation failed!");
         }
@@ -98,23 +99,127 @@ Deno.test(async function Examples(t) {
           throw new Error("Jedi should have a name!");
         }
 
-        // the only reason the `as` cast is needed here is because the validation logic is pretty basic.
-        // Even with `as` casts, the input will be guaranteed to match the type,
-        // so the `as` cast here isn't dangerous to use!
-        return x as Jedi;
-      }, "Jedi General");
-
-      const _Anakin = JediTagger({
-        affiliation: "Jedi",
-        rank: "General",
-        name: "Anakin Skywalker",
+        // `as` casting here doesn't compromise type safety because x has passed validation
+        return x as JediInfo;
       });
 
-      const _ObiWan = JediTagger({
+      // input argument infers from return type...
+      const _ObiWan = Jedi({
         affiliation: "Jedi",
         rank: "General",
         name: "Obi-Wan Kenobi",
       });
+
+      // So this throws an error in TypeScript and at runtime!
+      assertThrows(() => {
+        const _Anakin = Jedi({
+          //@ts-expect-error: intentionally incorrect
+          affiliation: "Sith",
+          rank: "General",
+          name: "Anakin Skywalker",
+        });
+      });
+    },
+  });
+
+  await t.step({
+    name: "Tag function inside validation",
+    fn() {
+      // interfaces are unsupported because of a TypeScript language issue :(
+      type JediInfo = {
+        affiliation: "Jedi";
+        rank: "General";
+        name: string;
+      };
+
+      type JediValidation = {
+        affiliation: string;
+        rank: string;
+        name: string;
+      };
+
+      // This is a much safer way to validate data, as it won't throw any errors
+      // and will instead return `undefined` on validation failure
+      function validateJedi(jedi: JediValidation) {
+        if (jedi.affiliation === "Jedi" && jedi.rank === "General") {
+          return y.tag("Jedi General", jedi as JediInfo);
+        }
+      }
+
+      const _ObiWan = validateJedi({
+        affiliation: "Jedi",
+        rank: "General",
+        name: "Obi-Wan Kenobi",
+      });
+
+      const _Anakin = validateJedi({
+        affiliation: "Sith",
+        rank: "General",
+        name: "Anakin Skywalker",
+      });
+    },
+  });
+
+  await t.step({
+    name: "Tag function with transformation, and checking if validation passed",
+    fn() {
+      interface Clone {
+        id: number;
+        name?: string;
+      }
+
+      type RankedClone = {
+        id: number;
+        name?: string;
+        rank: string;
+      };
+
+      function salute(clone: RankedClone) {
+        // We test to see if the clone has passed Arc Trooper validation
+        if (
+          y.isTagged("Arc Trooper", clone) ||
+          y.isTagged("Commander", clone)
+        ) {
+          // We now know this clone is an Arc Trooper or a Commander!
+          // Notice you can still use `clone` as its original type.
+          // Yatabl only adds metadata and never alters your objects otherwise
+          const message = `Attention! ${clone.rank} ${
+            clone.name ?? clone.id
+          } is on deck!`;
+
+          console.log(message);
+        } else {
+          console.log(`${clone.name ?? clone.id} is not recognized!`);
+        }
+      }
+
+      /**
+       * Trooper tag functions
+       */
+      const Trooper = {
+        // You can even include transformation logic and combine it with validation logic!
+        Arc: y.tag("Arc Trooper", ({ name, id }: Clone): RankedClone => {
+          return { rank: "Arc Trooper", name, id };
+        }),
+        Commander: y.tag("Commander", ({ name, id }: Clone): RankedClone => {
+          return { rank: "Commander", name, id };
+        }),
+        Trooper: y.tag(({ name, id }: Clone): RankedClone => {
+          return { rank: "Trooper", name, id };
+        }),
+      };
+
+      const Jesse = Trooper.Arc({ id: 5597, name: "Jesse" });
+
+      const Cody = Trooper.Commander({ id: 2224, name: "Cody" });
+
+      const Crosshair = Trooper.Trooper({ id: 9904, name: "Crosshair" });
+
+      salute(Jesse); // prints "Attention! Arc Trooper Jesse is on deck!"
+
+      salute(Cody); // prints "Attention! Commander Cody is on deck!"
+
+      salute(Crosshair); // prints "Crosshair is not recognized!"
     },
   });
 });
@@ -122,15 +227,15 @@ Deno.test(async function Examples(t) {
 
 ## The Secret Sauce: Yatables
 
-The secret sauce of `yatabl` is a function type called a `Yatable`. It represents any validation function.
+The secret sauce of `yatabl` is a function type called a `Yatable`. It represents any processing (validation and/or same-type transformation) function.
 
 ```ts
-export type Yatable<T extends DataStructure> = (thing: unknown) => T;
+export type Yatable<T extends DataStructure, U = T> = (thing: U) => T;
 ```
 
-It's generic enough to allow for working with any schema validation library (or type narrowing system in general), yet it allows for us to constrain any values we pass into our tagger function to type `T`. People could even write simple functions to convert schema validation constructs into `Yatable`s. In the future, there will be some official utility functions to convert things like type guards, type assertions, and Zod schemas into `Yatable`s.
+It's generic enough to allow for working with any schema validation library (or type narrowing system in general), yet it allows for us to constrain any values we pass into our tagging functions to type `T` or to type `U` if transformation is needed. We could even write simple functions to convert schema validation constructs into `Yatable`s, and in the future, there will be some official utility functions to convert things like type guards, type assertions, and Zod schemas into `Yatable`s.
 
-## To-Dos & Upcoming Features
+## Roadmap
 
 - [ ] `Yatable` Converters
   - [ ] Zod
@@ -141,7 +246,8 @@ It's generic enough to allow for working with any schema validation library (or 
   - [ ] Ctx
   - [ ] Validator auth (to determine which validator did what)
 - [ ] Error handling (maybe need a new library for that)
-- [ ] Event emission (for error logging or pub/sub programming)
+- [ ] Event emission (for error logging or pub/sub programming, may also need a new library)
+- [x] Full transformation functions (a la `new`-able objects)
 
 ## Support
 
