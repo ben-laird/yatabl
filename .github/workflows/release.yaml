@@ -26,6 +26,7 @@ jobs:
         uses: pnpm/action-setup@v2
         with:
           standalone: true
+          run_install: false
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
