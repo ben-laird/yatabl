@@ -13,7 +13,7 @@ Deno.test(async function Patterns(t) {
           rank: string;
           id: number;
           name?: string;
-        }>()
+        }>(),
       );
 
       // Step 2: use tag function wherever you want!

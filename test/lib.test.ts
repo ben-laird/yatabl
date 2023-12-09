@@ -1,4 +1,4 @@
-import { yatable, tag } from "../mod.ts";
+import { tag, yatable } from "../mod.ts";
 
 Deno.test(async function Examples(t) {
   await t.step({
@@ -10,7 +10,7 @@ Deno.test(async function Examples(t) {
           rank: string;
           id: number;
           name?: string;
-        }>()
+        }>(),
       );
 
       const _fives = Clone({
